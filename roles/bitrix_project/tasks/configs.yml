@@ -63,21 +63,8 @@
     mode: "0644"
   when: not settings_file.stat.exists
 
-- name: Fix file ownership for www
-  ansible.builtin.file:
-    path: "{{ project_dir }}/www"
-    owner: "1000"
-    group: "1000"
-    recurse: true
-  become: true
-  ignore_errors: true
-
-- name: Fix file ownership for shared
-  ansible.builtin.file:
-    path: "{{ project_dir }}/shared"
-    owner: "1000"
-    group: "1000"
-    recurse: true
-  become: true
-  ignore_errors: true
+- name: Fix file ownership for www and shared
+  ansible.builtin.shell: |
+    chown -R 1000:1000 "{{ project_dir }}/www" "{{ project_dir }}/shared" 2>/dev/null || true
+  changed_when: false
 
