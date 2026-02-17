@@ -1,0 +1,37 @@
+---
+# ===========================================
+# Значения по умолчанию для роли bitrix_project
+# ===========================================
+
+# Базовая директория для всех проектов
+base_dir: /home/vladislav/environment
+
+# Путь к проекту (вычисляется автоматически)
+project_dir: "{{ base_dir }}/{{ project_name }}"
+
+# Git
+git_branch: master
+
+# Порты
+nginx_port: 80
+mysql_port: 3306
+
+# MySQL/MariaDB
+mysql_database: bitrix_db
+mysql_user: bitrix_user
+mysql_password: bitrix_pass
+mysql_root_password: bitrix_root_pass
+
+# PHP
+php_memory_limit: 512M
+php_max_execution_time: 300
+
+# Префикс контейнеров (на основе имени проекта)
+container_prefix: "{{ project_name | replace('-', '_') }}"
+
+# Импорт дампа БД (при первом развёртывании)
+import_db: true
+
+# Запуск контейнеров после настройки
+start_containers: true
+

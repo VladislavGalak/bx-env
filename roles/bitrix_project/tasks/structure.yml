@@ -1,0 +1,21 @@
+---
+# ===========================================
+# Создание структуры директорий проекта
+# ===========================================
+
+- name: Create project directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ project_dir }}"
+    - "{{ project_dir }}/logs/nginx"
+    - "{{ project_dir }}/logs/php"
+    - "{{ project_dir }}/logs/bitrix"
+    - "{{ project_dir }}/mysql"
+    - "{{ project_dir }}/shared"
+    - "{{ project_dir }}/docker/nginx"
+    - "{{ project_dir }}/docker/php"
+    - "{{ project_dir }}/docker/mysql"
+

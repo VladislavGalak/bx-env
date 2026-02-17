@@ -1,0 +1,26 @@
+---
+# ===========================================
+# Клонирование / обновление git-репозитория
+# ===========================================
+
+- name: Check if www directory exists
+  ansible.builtin.stat:
+    path: "{{ project_dir }}/www/.git"
+  register: www_git
+
+- name: Clone project repository
+  ansible.builtin.git:
+    repo: "{{ git_repo }}"
+    dest: "{{ project_dir }}/www"
+    version: "{{ git_branch }}"
+    accept_hostkey: true
+  when: not www_git.stat.exists
+
+- name: Pull latest changes
+  ansible.builtin.git:
+    repo: "{{ git_repo }}"
+    dest: "{{ project_dir }}/www"
+    version: "{{ git_branch }}"
+    update: true
+  when: www_git.stat.exists
+

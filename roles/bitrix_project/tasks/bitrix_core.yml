@@ -1,0 +1,75 @@
+---
+# ===========================================
+# Распаковка ядра Bitrix
+# ===========================================
+
+- name: Check if Bitrix core already extracted
+  ansible.builtin.stat:
+    path: "{{ project_dir }}/shared/bitrix/modules"
+  register: bitrix_core
+
+- name: Check bitrix archive exists
+  ansible.builtin.stat:
+    path: "{{ bitrix_archive }}"
+  register: bitrix_archive_file
+  when: not bitrix_core.stat.exists
+
+- name: Fail if archive not found
+  ansible.builtin.fail:
+    msg: "Архив ядра Bitrix не найден: {{ bitrix_archive }}"
+  when:
+    - not bitrix_core.stat.exists
+    - not (bitrix_archive_file.stat.exists | default(false))
+
+- name: Extract Bitrix core archive
+  ansible.builtin.unarchive:
+    src: "{{ bitrix_archive }}"
+    dest: "{{ project_dir }}/shared/"
+    remote_src: true
+  when: not bitrix_core.stat.exists
+
+- name: Check if bitrix directory is in correct location
+  ansible.builtin.stat:
+    path: "{{ project_dir }}/shared/bitrix"
+  register: bitrix_dir_check
+  when: not bitrix_core.stat.exists
+
+- name: Find bitrix directory after extraction
+  ansible.builtin.find:
+    paths: "{{ project_dir }}/shared"
+    file_type: directory
+    patterns: "bitrix"
+    recurse: true
+    depth: 2
+  register: found_bitrix
+  when:
+    - not bitrix_core.stat.exists
+    - not (bitrix_dir_check.stat.exists | default(false))
+
+- name: Move bitrix to correct location
+  ansible.builtin.command:
+    cmd: "mv {{ found_bitrix.files[0].path }} {{ project_dir }}/shared/bitrix"
+  when:
+    - not bitrix_core.stat.exists
+    - not (bitrix_dir_check.stat.exists | default(false))
+    - (found_bitrix.files | default([])) | length > 0
+
+- name: Remove existing www/bitrix (if not a symlink)
+  ansible.builtin.file:
+    path: "{{ project_dir }}/www/bitrix"
+    state: absent
+  when: not bitrix_core.stat.exists
+
+- name: Create symlink www/bitrix -> ../shared/bitrix
+  ansible.builtin.file:
+    src: ../shared/bitrix
+    dest: "{{ project_dir }}/www/bitrix"
+    state: link
+    force: true
+
+- name: Create shared/bitrix/php_interface directory
+  ansible.builtin.file:
+    path: "{{ project_dir }}/shared/bitrix/php_interface"
+    state: directory
+    mode: "0755"
+

@@ -1,0 +1,55 @@
+; {{ ansible_managed }}
+; ===========================================
+; PHP Configuration for Bitrix CMS
+; ===========================================
+
+[PHP]
+short_open_tag = On
+display_errors = On
+error_reporting = E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED
+log_errors = On
+error_log = /var/log/php_errors.log
+
+; --- Лимиты памяти и времени ---
+memory_limit = {{ php_memory_limit }}
+max_execution_time = {{ php_max_execution_time }}
+max_input_time = {{ php_max_execution_time }}
+max_input_vars = 10000
+
+; --- Загрузка файлов ---
+file_uploads = On
+upload_max_filesize = 100M
+post_max_size = 128M
+
+; --- Сессии ---
+session.save_handler = files
+session.save_path = /tmp
+session.gc_maxlifetime = 14400
+session.cookie_httponly = On
+
+; --- Кодировка ---
+default_charset = "UTF-8"
+mbstring.func_overload = 0
+mbstring.internal_encoding = UTF-8
+
+; --- Безопасность ---
+allow_url_fopen = On
+allow_url_include = Off
+expose_php = Off
+
+; --- Кэширование OPcache ---
+[opcache]
+opcache.enable = 1
+opcache.enable_cli = 0
+opcache.memory_consumption = 256
+opcache.interned_strings_buffer = 16
+opcache.max_accelerated_files = 100000
+opcache.revalidate_freq = 2
+opcache.save_comments = 1
+opcache.fast_shutdown = 1
+
+; --- Прочее ---
+realpath_cache_size = 4096k
+realpath_cache_ttl = 600
+date.timezone = Europe/Moscow
+

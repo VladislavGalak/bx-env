@@ -1,0 +1,37 @@
+---
+# ===========================================
+# Импорт дампа базы данных
+# ===========================================
+
+- name: Check if dump file exists
+  ansible.builtin.stat:
+    path: "{{ db_dump }}"
+  register: dump_file
+
+- name: Fail if dump not found
+  ansible.builtin.fail:
+    msg: "Дамп БД не найден: {{ db_dump }}"
+  when: not dump_file.stat.exists
+
+- name: Import database dump (.sql.gz)
+  ansible.builtin.shell: |
+    gunzip -c "{{ db_dump }}" | \
+    docker compose exec -T mysql \
+    mysql -u"{{ mysql_user }}" -p"{{ mysql_password }}" "{{ mysql_database }}"
+  args:
+    chdir: "{{ project_dir }}"
+  when: db_dump is match(".*\\.sql\\.gz$")
+
+- name: Import database dump (.sql)
+  ansible.builtin.shell: |
+    docker compose exec -T mysql \
+    mysql -u"{{ mysql_user }}" -p"{{ mysql_password }}" "{{ mysql_database }}" \
+    < "{{ db_dump }}"
+  args:
+    chdir: "{{ project_dir }}"
+  when: db_dump is match(".*\\.sql$")
+
+- name: Database import complete
+  ansible.builtin.debug:
+    msg: "Дамп {{ db_dump }} успешно импортирован в базу {{ mysql_database }}"
+

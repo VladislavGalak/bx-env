@@ -1,0 +1,49 @@
+# {{ ansible_managed }}
+# ===========================================
+# MariaDB Configuration for Bitrix CMS
+# ===========================================
+
+[mysqld]
+# --- Основные настройки ---
+character-set-server        = utf8mb4
+collation-server            = utf8mb4_unicode_ci
+default-storage-engine      = InnoDB
+sql_mode                    = ""
+
+# --- InnoDB ---
+innodb_buffer_pool_size     = 512M
+innodb_log_file_size        = 128M
+innodb_file_per_table       = 1
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method         = O_DIRECT
+
+# --- Лимиты ---
+max_connections             = 200
+max_allowed_packet          = 128M
+tmp_table_size              = 64M
+max_heap_table_size         = 64M
+join_buffer_size            = 2M
+sort_buffer_size            = 2M
+
+# --- Кэширование запросов ---
+query_cache_type            = 1
+query_cache_size            = 64M
+query_cache_limit           = 4M
+
+# --- Логирование ---
+slow_query_log              = 1
+slow_query_log_file         = /var/log/mysql/slow.log
+long_query_time             = 2
+
+# --- Прочее ---
+transaction-isolation       = READ-COMMITTED
+key_buffer_size             = 32M
+thread_cache_size           = 16
+table_open_cache            = 2048
+
+[client]
+default-character-set       = utf8mb4
+
+[mysql]
+default-character-set       = utf8mb4
+

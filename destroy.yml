@@ -1,0 +1,61 @@
+---
+# ===========================================
+# Playbook: Удаление Bitrix-проекта
+# ===========================================
+#
+# Использование:
+#   ansible-playbook destroy.yml -e "project_name=mysite"
+
+- name: Destroy Bitrix project
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    base_dir: /home/vladislav/environment
+    project_dir: "{{ base_dir }}/{{ project_name }}"
+    container_prefix: "{{ project_name | replace('-', '_') }}"
+
+  pre_tasks:
+    - name: Validate project name
+      ansible.builtin.assert:
+        that:
+          - project_name is defined and project_name | length > 0
+        fail_msg: "Не указано имя проекта! Используйте: ansible-playbook destroy.yml -e 'project_name=mysite'"
+
+    - name: Check if project exists
+      ansible.builtin.stat:
+        path: "{{ project_dir }}"
+      register: project_check
+
+    - name: Fail if project does not exist
+      ansible.builtin.fail:
+        msg: "Проект {{ project_name }} не найден в {{ project_dir }}"
+      when: not project_check.stat.exists
+
+    - name: Confirm destruction
+      ansible.builtin.pause:
+        prompt: "Вы уверены, что хотите УДАЛИТЬ проект '{{ project_name }}'? Введите 'yes' для подтверждения"
+      register: confirm
+
+    - name: Abort if not confirmed
+      ansible.builtin.fail:
+        msg: "Отменено."
+      when: confirm.user_input != "yes"
+
+  tasks:
+    - name: Stop and remove containers
+      ansible.builtin.command:
+        cmd: docker compose down -v
+        chdir: "{{ project_dir }}"
+      ignore_errors: true
+
+    - name: Remove project directory
+      ansible.builtin.file:
+        path: "{{ project_dir }}"
+        state: absent
+      become: true
+
+    - name: Project destroyed
+      ansible.builtin.debug:
+        msg: "Проект {{ project_name }} полностью удалён из {{ project_dir }}"
+

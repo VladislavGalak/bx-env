@@ -1,0 +1,38 @@
+---
+# ===========================================
+# Главный таск-файл роли bitrix_project
+# ===========================================
+
+- name: Check if project already exists
+  ansible.builtin.stat:
+    path: "{{ project_dir }}/docker-compose.yml"
+  register: project_exists
+
+- name: Project already deployed
+  ansible.builtin.debug:
+    msg: "Проект {{ project_name }} уже существует в {{ project_dir }}. Обновляю конфиги."
+  when: project_exists.stat.exists
+
+- name: Create project structure
+  ansible.builtin.include_tasks: structure.yml
+
+- name: Clone git repository
+  ansible.builtin.include_tasks: git.yml
+
+- name: Extract Bitrix core
+  ansible.builtin.include_tasks: bitrix_core.yml
+
+- name: Generate configs
+  ansible.builtin.include_tasks: configs.yml
+
+- name: Start Docker containers
+  ansible.builtin.include_tasks: docker.yml
+  when: start_containers | bool
+
+- name: Import database dump
+  ansible.builtin.include_tasks: database.yml
+  when:
+    - import_db | bool
+    - start_containers | bool
+    - not project_exists.stat.exists
+

@@ -1,0 +1,52 @@
+---
+# ===========================================
+# Пример конфигурации нового проекта
+# ===========================================
+# Скопируйте этот файл и заполните параметры:
+#   cp example.yml myproject.yml
+#
+# Затем разверните:
+#   cd /home/vladislav/environment/ans
+#   ansible-playbook deploy.yml -e "@projects/myproject.yml"
+# ===========================================
+
+# --- Обязательные параметры ---
+
+# Имя проекта (будет именем директории в /home/vladislav/environment/)
+project_name: myproject
+
+# URL git-репозитория (клонируется в www/)
+git_repo: "git@git.dalee.ru:client/main.git"
+
+# Путь к архиву ядра Bitrix (.tar.gz или .zip)
+# Распаковывается в shared/bitrix/
+bitrix_archive: "/home/vladislav/archives/bitrix_core.tar.gz"
+
+# Путь к дампу базы данных (.sql или .sql.gz)
+# Импортируется при первом развёртывании
+db_dump: "/home/vladislav/archives/myproject_dump.sql.gz"
+
+# --- Опциональные параметры ---
+
+# Git-ветка (по умолчанию: master)
+# git_branch: develop
+
+# Порты (по умолчанию: nginx=80, mysql=3306)
+# Для параллельного запуска нескольких проектов используйте разные порты!
+nginx_port: 8081
+mysql_port: 3307
+
+# Креды БД (по умолчанию: bitrix_db / bitrix_user / bitrix_pass)
+# mysql_database: client_db
+# mysql_user: client_user
+# mysql_password: client_pass
+# mysql_root_password: root_pass
+
+# PHP (по умолчанию: 512M / 300)
+# php_memory_limit: 1024M
+# php_max_execution_time: 600
+
+# Управление поведением
+# start_containers: false   # Не запускать контейнеры
+# import_db: false           # Не импортировать дамп
+

@@ -1,0 +1,80 @@
+{{ ansible_managed | comment }}
+
+services:
+  # === Nginx ===
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: {{ container_prefix }}_nginx
+    restart: unless-stopped
+    ports:
+      - "{{ nginx_port }}:80"
+    volumes:
+      - ./www:/var/www/html
+      - ./shared:/var/www/shared
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - php
+    networks:
+      - bitrix
+
+  # === PHP-FPM ===
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: {{ container_prefix }}_php
+    restart: unless-stopped
+    volumes:
+      - ./www:/var/www/html
+      - ./shared:/var/www/shared
+      - ./logs/php:/var/log
+      - ./logs/bitrix:/var/log/bitrix
+    environment:
+      - PHP_MEMORY_LIMIT={{ php_memory_limit }}
+      - PHP_MAX_EXECUTION_TIME={{ php_max_execution_time }}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      memcached:
+        condition: service_started
+    networks:
+      - bitrix
+
+  # === MariaDB ===
+  mysql:
+    image: mariadb:10.11
+    container_name: {{ container_prefix }}_mysql
+    restart: unless-stopped
+    ports:
+      - "{{ mysql_port }}:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/bitrix.cnf:ro
+    environment:
+      MYSQL_ROOT_PASSWORD: {{ mysql_root_password }}
+      MYSQL_DATABASE: {{ mysql_database }}
+      MYSQL_USER: {{ mysql_user }}
+      MYSQL_PASSWORD: {{ mysql_password }}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - bitrix
+
+  # === Memcached ===
+  memcached:
+    image: memcached:1.6-alpine
+    container_name: {{ container_prefix }}_memcached
+    restart: unless-stopped
+    command: memcached -m 256 -c 1024
+    networks:
+      - bitrix
+
+networks:
+  bitrix:
+    driver: bridge
+

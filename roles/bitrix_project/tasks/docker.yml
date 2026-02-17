@@ -1,0 +1,37 @@
+---
+# ===========================================
+# Сборка и запуск Docker-контейнеров
+# ===========================================
+
+- name: Build and start containers
+  ansible.builtin.command:
+    cmd: docker compose up -d --build
+    chdir: "{{ project_dir }}"
+  register: compose_result
+  changed_when: "'Created' in compose_result.stderr or 'Started' in compose_result.stderr"
+
+- name: Show docker compose output
+  ansible.builtin.debug:
+    msg: "{{ compose_result.stderr_lines | default([]) }}"
+  when: compose_result.stderr_lines | default([]) | length > 0
+
+- name: Wait for MySQL to be healthy
+  ansible.builtin.command:
+    cmd: "docker inspect --format={%raw%}{{.State.Health.Status}}{%endraw%} {{ container_prefix }}_mysql"
+  register: mysql_health
+  until: mysql_health.stdout == "healthy"
+  retries: 30
+  delay: 3
+  changed_when: false
+
+- name: Show running containers
+  ansible.builtin.command:
+    cmd: docker compose ps
+    chdir: "{{ project_dir }}"
+  register: ps_result
+  changed_when: false
+
+- name: Container status
+  ansible.builtin.debug:
+    msg: "{{ ps_result.stdout_lines }}"
+

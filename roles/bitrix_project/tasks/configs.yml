@@ -1,0 +1,83 @@
+---
+# ===========================================
+# Генерация конфигурационных файлов
+# ===========================================
+
+- name: Generate .env
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ project_dir }}/.env"
+    mode: "0644"
+
+- name: Generate docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ project_dir }}/docker-compose.yml"
+    mode: "0644"
+
+- name: Generate Makefile
+  ansible.builtin.template:
+    src: Makefile.j2
+    dest: "{{ project_dir }}/Makefile"
+    mode: "0644"
+
+- name: Generate nginx config
+  ansible.builtin.template:
+    src: default.conf.j2
+    dest: "{{ project_dir }}/docker/nginx/default.conf"
+    mode: "0644"
+
+- name: Generate MySQL config
+  ansible.builtin.template:
+    src: my.cnf.j2
+    dest: "{{ project_dir }}/docker/mysql/my.cnf"
+    mode: "0644"
+
+- name: Generate PHP config
+  ansible.builtin.template:
+    src: php.ini.j2
+    dest: "{{ project_dir }}/docker/php/php.ini"
+    mode: "0644"
+
+- name: Copy Dockerfile
+  ansible.builtin.copy:
+    src: Dockerfile
+    dest: "{{ project_dir }}/docker/php/Dockerfile"
+    mode: "0644"
+
+- name: Generate dbconn.php
+  ansible.builtin.template:
+    src: dbconn.php.j2
+    dest: "{{ project_dir }}/shared/bitrix/php_interface/dbconn.php"
+    mode: "0644"
+
+- name: Check if .settings.php already exists
+  ansible.builtin.stat:
+    path: "{{ project_dir }}/shared/bitrix/.settings.php"
+  register: settings_file
+
+- name: Generate .settings.php (only on first deploy)
+  ansible.builtin.template:
+    src: settings.php.j2
+    dest: "{{ project_dir }}/shared/bitrix/.settings.php"
+    mode: "0644"
+  when: not settings_file.stat.exists
+
+- name: Fix file ownership for www
+  ansible.builtin.file:
+    path: "{{ project_dir }}/www"
+    owner: "1000"
+    group: "1000"
+    recurse: true
+  become: true
+  ignore_errors: true
+
+- name: Fix file ownership for shared
+  ansible.builtin.file:
+    path: "{{ project_dir }}/shared"
+    owner: "1000"
+    group: "1000"
+    recurse: true
+  become: true
+  ignore_errors: true
+

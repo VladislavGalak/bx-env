@@ -1,0 +1,61 @@
+# {{ ansible_managed }}
+# ===========================================
+# Makefile для {{ project_name }}
+# ===========================================
+
+.PHONY: up down restart build logs ps clean bash mysql
+
+# --- Запуск контейнеров ---
+up:
+	docker compose up -d
+
+# --- Остановка контейнеров ---
+down:
+	docker compose down
+
+# --- Перезапуск ---
+restart:
+	docker compose down
+	docker compose up -d
+
+# --- Сборка образов ---
+build:
+	docker compose build --no-cache
+
+# --- Логи ---
+logs:
+	docker compose logs -f
+
+logs-php:
+	docker compose logs -f php
+
+logs-nginx:
+	docker compose logs -f nginx
+
+logs-mysql:
+	docker compose logs -f mysql
+
+# --- Статус контейнеров ---
+ps:
+	docker compose ps
+
+# --- Зайти в контейнер PHP ---
+bash:
+	docker compose exec php bash
+
+# --- Зайти в MySQL ---
+mysql:
+	docker compose exec mysql mysql -u{{ mysql_user }} -p{{ mysql_password }} {{ mysql_database }}
+
+# --- Права на файлы ---
+fix-permissions:
+	sudo chown -R 1000:1000 www/
+	find www/ -type d -exec chmod 755 {} \;
+	find www/ -type f -exec chmod 644 {} \;
+
+# --- Полная очистка ---
+clean:
+	docker compose down -v
+	rm -rf mysql/ logs/
+	@echo "=== Все данные удалены ==="
+

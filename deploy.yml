@@ -1,0 +1,53 @@
+---
+# ===========================================
+# Playbook: Развёртывание Bitrix-проекта
+# ===========================================
+#
+# Использование:
+#   ansible-playbook deploy.yml -e "@projects/np.yml"
+#   ansible-playbook deploy.yml -e "project_name=mysite git_repo=... bitrix_archive=... db_dump=..."
+#
+# Параметры:
+#   project_name    - Имя проекта (обязательно)
+#   git_repo        - URL git-репозитория для www (обязательно)
+#   bitrix_archive  - Путь к архиву ядра Bitrix (обязательно)
+#   db_dump         - Путь к дампу БД (обязательно)
+#   git_branch      - Ветка git (по умолчанию: master)
+#   nginx_port      - Порт Nginx (по умолчанию: 80)
+#   mysql_port      - Порт MySQL (по умолчанию: 3306)
+#   mysql_database  - Имя БД (по умолчанию: bitrix_db)
+#   mysql_user      - Пользователь БД (по умолчанию: bitrix_user)
+#   mysql_password  - Пароль БД (по умолчанию: bitrix_pass)
+
+- name: Deploy Bitrix project
+  hosts: localhost
+  gather_facts: false
+
+  pre_tasks:
+    - name: Validate required variables
+      ansible.builtin.assert:
+        that:
+          - project_name is defined and project_name | length > 0
+          - git_repo is defined and git_repo | length > 0
+          - bitrix_archive is defined and bitrix_archive | length > 0
+          - db_dump is defined and db_dump | length > 0
+        fail_msg: |
+          Не указаны обязательные переменные!
+          Обязательные: project_name, git_repo, bitrix_archive, db_dump
+
+          Пример:
+            ansible-playbook deploy.yml -e "@projects/myproject.yml"
+
+    - name: Show deployment info
+      ansible.builtin.debug:
+        msg:
+          - "=== Развёртывание проекта: {{ project_name }} ==="
+          - "Директория: {{ base_dir | default('/home/vladislav/environment') }}/{{ project_name }}"
+          - "Git: {{ git_repo }} (ветка: {{ git_branch | default('master') }})"
+          - "Bitrix: {{ bitrix_archive }}"
+          - "Дамп БД: {{ db_dump }}"
+          - "Порты: nginx={{ nginx_port | default(80) }}, mysql={{ mysql_port | default(3306) }}"
+
+  roles:
+    - role: bitrix_project
+
