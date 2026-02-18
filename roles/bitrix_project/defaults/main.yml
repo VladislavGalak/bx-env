@@ -35,3 +35,4 @@ import_db: true
 # Запуск контейнеров после настройки
 start_containers: true
 
+

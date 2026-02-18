@@ -28,3 +28,4 @@ echo "Затем разверните проект:"
 echo "  cd $(dirname "$0")"
 echo "  ansible-playbook deploy.yml -e \"@projects/np.yml\""
 
+

@@ -13,18 +13,18 @@
 # --- Обязательные параметры ---
 
 # Имя проекта (будет именем директории в /home/vladislav/environment/)
-project_name: myproject
+project_name: nauka
 
 # URL git-репозитория (клонируется в www/)
-git_repo: "git@gitlab.ru:client/projct.git"
+git_repo: "git@git.dalee.ru:np/10-let-nauki.git"
 
 # Путь к архиву ядра Bitrix (.tar.gz или .zip)
 # Распаковывается в shared/bitrix/
-bitrix_archive: "/absolute/oath/to/bitrix.tar.gz"
+bitrix_archive: "/home/vladislav/environment/tmp/bitrix_nauka.tar.gz"
 
 # Путь к дампу базы данных (.sql или .sql.gz)
 # Импортируется при первом развёртывании
-db_dump: "/absolute/oath/to/dump.sql.gz"
+db_dump: "/home/vladislav/environment/tmp/nauka.sql"
 
 # --- Опциональные параметры ---
 
